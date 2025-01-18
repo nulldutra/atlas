@@ -3,7 +3,6 @@ package proxy
 import (
 	"atlas/balancer"
 	"atlas/inspect"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -23,6 +22,7 @@ func NewProxy(backend, denyIPList []string) *Proxy {
 
 func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	backend, _ := balancer.BalancerBackend(p.Backend)
+	inspect := inspect.NewInspectHTTPRequest(p.DenyIPList)
 
 	remote, err := url.Parse(backend)
 	if err != nil {
@@ -30,9 +30,12 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	inspect := inspect.InspectRequest(r, p.DenyIPList)
+	denyIP := inspect.DenyIP(r)
 
-	fmt.Println(inspect)
+	if denyIP {
+		http.Error(w, "Your IP Address is on the deny list", http.StatusForbidden)
+		return
+	}
 
 	endpoint := remote.String() + r.URL.Path
 

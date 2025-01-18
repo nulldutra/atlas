@@ -2,17 +2,23 @@ package inspect
 
 import (
 	"atlas/denyip"
-	"fmt"
 	"net/http"
 	"strings"
 )
 
-func InspectRequest(r *http.Request, denyIPList []string) bool {
+type InspectHTTPRequest struct {
+	DenyIPList []string
+}
+
+func NewInspectHTTPRequest(denyIPList []string) *InspectHTTPRequest {
+	return &InspectHTTPRequest{
+		DenyIPList: denyIPList,
+	}
+}
+
+func (i InspectHTTPRequest) DenyIP(r *http.Request) bool {
 	remoteAddr := strings.Split(r.RemoteAddr, ":")
-
-	denyIP := denyip.DenyIP(denyIPList, remoteAddr[0])
-
-	fmt.Println(denyIP)
+	denyIP := denyip.DenyIP(i.DenyIPList, remoteAddr[0])
 
 	return denyIP
 }
