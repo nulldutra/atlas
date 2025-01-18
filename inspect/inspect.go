@@ -1,13 +1,14 @@
 package inspect
 
 import (
-	"atlas/denyip"
+	"atlas/deny"
 	"net/http"
 	"strings"
 )
 
 type InspectHTTPRequest struct {
-	DenyIPList []string
+	DenyIPList     []string
+	DenyHTTPHeader []string
 }
 
 func NewInspectHTTPRequest(denyIPList []string) *InspectHTTPRequest {
@@ -18,7 +19,14 @@ func NewInspectHTTPRequest(denyIPList []string) *InspectHTTPRequest {
 
 func (i InspectHTTPRequest) DenyIP(r *http.Request) bool {
 	remoteAddr := strings.Split(r.RemoteAddr, ":")
-	denyIP := denyip.DenyIP(i.DenyIPList, remoteAddr[0])
+	denyIP := deny.DenyIP(i.DenyIPList, remoteAddr[0])
+
+	return denyIP
+}
+
+func (i InspectHTTPRequest) DenyHeader(r *http.Request) bool {
+	remoteAddr := strings.Split(r.RemoteAddr, ":")
+	denyIP := deny.DenyIP(i.DenyIPList, remoteAddr[0])
 
 	return denyIP
 }

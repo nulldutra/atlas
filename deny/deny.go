@@ -1,4 +1,4 @@
-package denyip
+package deny
 
 import (
 	"slices"
