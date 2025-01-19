@@ -12,15 +12,9 @@ import (
 func main() {
 	config := config.NewConfig()
 
-	/*
-		fmt.Println(config.DenyIPList)
-		fmt.Println(config.DenyHTTPHeader)
-		fmt.Println(config.Backend)
-	*/
-
 	inspect := inspect.NewInspectHTTPRequest(config.DenyIPList, config.DenyHTTPHeader, config.DenyHTTPBody)
-
 	proxy := proxy.NewProxy(config.Backend, inspect)
+
 	http.HandleFunc("/", proxy.Server)
 
 	fmt.Println("Starting WaF atlas service..")
