@@ -3,7 +3,7 @@ package proxy
 import (
 	"atlas/balancer"
 	"atlas/inspect"
-	"fmt"
+	"atlas/metrics"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,10 +31,10 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//body, _ := io.ReadAll(r.Body)
-	//r.Body = io.NopCloser(bytes.NewReader(body))
+	metrics.RequestCounter.Inc()
 
 	if p.Inspect.InspectRequest(w, r) {
+		metrics.RequestBlockedCounter.Inc()
 		return
 	}
 
@@ -50,7 +50,7 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	resp, err := client.Do(r)
 
 	if err != nil {
-		fmt.Println(err)
+		metrics.RequestFailedCounter.Inc()
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)
 		return
 	}
@@ -64,6 +64,7 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(resp.StatusCode)
 
 	if _, err := io.Copy(w, resp.Body); err != nil {
+		metrics.RequestFailedCounter.Inc()
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)
 	}
 }
