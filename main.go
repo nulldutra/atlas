@@ -2,6 +2,7 @@ package main
 
 import (
 	"atlas/config"
+	"atlas/inspect"
 	"atlas/proxy"
 	"fmt"
 	"log"
@@ -17,7 +18,9 @@ func main() {
 		fmt.Println(config.Backend)
 	*/
 
-	proxy := proxy.NewProxy(config.Backend, config.DenyIPList, config.DenyHTTPHeader, config.DenyHTTPBody)
+	inspect := inspect.NewInspectHTTPRequest(config.DenyIPList, config.DenyHTTPHeader, config.DenyHTTPBody)
+
+	proxy := proxy.NewProxy(config.Backend, inspect)
 	http.HandleFunc("/", proxy.Server)
 
 	fmt.Println("Starting WaF atlas service..")

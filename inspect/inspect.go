@@ -2,6 +2,8 @@ package inspect
 
 import (
 	"atlas/deny"
+	"bytes"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -53,6 +55,32 @@ func (i InspectHTTPRequest) DenyBody(body []byte) bool {
 		if denyBody {
 			return true
 		}
+	}
+
+	return false
+}
+
+func (i InspectHTTPRequest) InspectRequest(w http.ResponseWriter, r *http.Request) bool {
+	body, _ := io.ReadAll(r.Body)
+	r.Body = io.NopCloser(bytes.NewReader(body))
+
+	denyIP := i.DenyIP(r)
+	denyHTTPHeader := i.DenyHeader(r)
+	denyHTTPBody := i.DenyBody(body)
+
+	if denyIP {
+		http.Error(w, "Your IP Address is on the deny list.", http.StatusForbidden)
+		return true
+	}
+
+	if denyHTTPHeader {
+		http.Error(w, "Your requests were blocked because you sent unauthorized headers.", http.StatusForbidden)
+		return true
+	}
+
+	if denyHTTPBody {
+		http.Error(w, "Detected malicous requests.", http.StatusForbidden)
+		return true
 	}
 
 	return false

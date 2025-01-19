@@ -3,7 +3,6 @@ package proxy
 import (
 	"atlas/balancer"
 	"atlas/inspect"
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,24 +11,19 @@ import (
 )
 
 type Proxy struct {
-	Backend        []string
-	DenyIPList     []string
-	DenyHTTPHeader []string
-	DenyHTTPBody   []string
+	Backend []string
+	Inspect inspect.InspectHTTPRequest
 }
 
-func NewProxy(backend, denyIPList, denyHTTPHeader, denyHTTPBody []string) *Proxy {
+func NewProxy(backend []string, inspect *inspect.InspectHTTPRequest) *Proxy {
 	return &Proxy{
-		Backend:        backend,
-		DenyIPList:     denyIPList,
-		DenyHTTPHeader: denyHTTPHeader,
-		DenyHTTPBody:   denyHTTPBody,
+		Backend: backend,
+		Inspect: *inspect,
 	}
 }
 
 func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	backend, _ := balancer.BalancerBackend(p.Backend)
-	inspect := inspect.NewInspectHTTPRequest(p.DenyIPList, p.DenyHTTPHeader, p.DenyHTTPBody)
 
 	remote, err := url.Parse(backend)
 	if err != nil {
@@ -37,25 +31,10 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := io.ReadAll(r.Body)
-	r.Body = io.NopCloser(bytes.NewReader(body))
+	//body, _ := io.ReadAll(r.Body)
+	//r.Body = io.NopCloser(bytes.NewReader(body))
 
-	denyIP := inspect.DenyIP(r)
-	denyHTTPHeader := inspect.DenyHeader(r)
-	denyHTTPBody := inspect.DenyBody(body)
-
-	if denyIP {
-		http.Error(w, "Your IP Address is on the deny list.", http.StatusForbidden)
-		return
-	}
-
-	if denyHTTPHeader {
-		http.Error(w, "Your requests were blocked because you sent unauthorized headers.", http.StatusForbidden)
-		return
-	}
-
-	if denyHTTPBody {
-		http.Error(w, "Detected malicous requests.", http.StatusForbidden)
+	if p.Inspect.InspectRequest(w, r) {
 		return
 	}
 
