@@ -3,7 +3,6 @@ package proxy
 import (
 	"atlas/balancer"
 	"atlas/inspect"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -36,8 +35,6 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	denyIP := inspect.DenyIP(r)
 	denyHTTPHeader := inspect.DenyHeader(r)
 
-	fmt.Println(denyHTTPHeader)
-
 	if denyIP {
 		http.Error(w, "Your IP Address is on the deny list.", http.StatusForbidden)
 		return
@@ -48,17 +45,12 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	endpoint := remote.String() + r.URL.Path
+	r.Host = remote.Host
+	r.URL.Host = remote.Host
+	r.URL.Scheme = remote.Scheme
+	r.RequestURI = ""
 
-	nextRequest, err := http.NewRequest(r.Method, endpoint, r.Body)
-	if err != nil {
-		http.Error(w, "Bad Gateway", http.StatusBadGateway)
-		return
-	}
-
-	nextRequest.Header = r.Header
-
-	resp, err := http.DefaultClient.Do(nextRequest)
+	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)
 		return
@@ -66,16 +58,10 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 
 	defer resp.Body.Close()
 
-	responseBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, "Bad Gateway", http.StatusBadGateway)
-		return
-	}
-
 	for k, v := range resp.Header {
 		w.Header()[k] = v
 	}
 
 	w.WriteHeader(resp.StatusCode)
-	w.Write(responseBytes)
+	io.Copy(w, resp.Body)
 }
