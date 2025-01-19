@@ -17,7 +17,7 @@ func main() {
 		fmt.Println(config.Backend)
 	*/
 
-	proxy := proxy.NewProxy(config.Backend, config.DenyIPList, config.DenyHTTPHeader)
+	proxy := proxy.NewProxy(config.Backend, config.DenyIPList, config.DenyHTTPHeader, config.DenyHTTPBody)
 	http.HandleFunc("/", proxy.Server)
 
 	fmt.Println("Starting WaF atlas service..")

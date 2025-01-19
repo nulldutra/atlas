@@ -2,10 +2,18 @@ denyIPList:
   - 192.168.1.1
   - 192.168.1.2
   - 192.168.1.3
+  - 192.168.1.4
   - 192.168.1.107
+  - 192.168.88.251
 
 denyHTTPHeader:
-  - requests/python
+  - curl/8.9.1
+
+DenyHTTPBody:
+    - bash
+    - ping
+    - ls
+    - echo
 
 backend:
-  - http://localhost:3000
+  - http://192.168.88.250:80

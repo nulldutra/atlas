@@ -3,18 +3,21 @@ package inspect
 import (
 	"atlas/deny"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 type InspectHTTPRequest struct {
 	DenyIPList     []string
 	DenyHTTPHeader []string
+	DenyHTTPBody   []string
 }
 
-func NewInspectHTTPRequest(denyIPList, denyHTTPHeader []string) *InspectHTTPRequest {
+func NewInspectHTTPRequest(denyIPList, denyHTTPHeader, denyHTTPBody []string) *InspectHTTPRequest {
 	return &InspectHTTPRequest{
 		DenyIPList:     denyIPList,
 		DenyHTTPHeader: denyHTTPHeader,
+		DenyHTTPBody:   denyHTTPBody,
 	}
 }
 
@@ -35,6 +38,20 @@ func (i InspectHTTPRequest) DenyHeader(r *http.Request) bool {
 			if denyHeader {
 				return true
 			}
+		}
+	}
+
+	return false
+}
+
+func (i InspectHTTPRequest) DenyBody(body []byte) bool {
+	for _, denyBody := range i.DenyHTTPBody {
+
+		rawBody, _ := url.QueryUnescape(string(body))
+		denyBody := deny.DenyHTTPBody(rawBody, denyBody)
+
+		if denyBody {
+			return true
 		}
 	}
 
