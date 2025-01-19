@@ -57,11 +57,15 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer resp.Body.Close()
+	defer r.Body.Close()
 
 	for k, v := range resp.Header {
 		w.Header()[k] = v
 	}
 
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		http.Error(w, "Bad Gateway", http.StatusBadGateway)
+	}
 }
