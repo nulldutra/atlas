@@ -79,7 +79,7 @@ func (i InspectHTTPRequest) InspectRequest(w http.ResponseWriter, r *http.Reques
 	}
 
 	if denyHTTPBody {
-		http.Error(w, "Detected malicous requests.", http.StatusForbidden)
+		http.Error(w, "Detected malicious requests.", http.StatusForbidden)
 		return true
 	}
 
