@@ -44,7 +44,7 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	r.RequestURI = ""
 
 	client := http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: time.Minute,
 	}
 
 	resp, err := client.Do(r)
