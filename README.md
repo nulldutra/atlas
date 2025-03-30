@@ -2,7 +2,7 @@
 
 Is an simple Web Application Firewall entirely created in Go language.
 The reason for the project is for study Golang and how handle HTTP requests.
-<img align="right" width="310" height="240" src="https://raw.githubusercontent.com/haskelldutra/atlas/main/.logo/logo.png">
+<img align="right" width="310" height="240" src="https://raw.githubusercontent.com/nulldutra/atlas/main/.logo/logo.png">
 
 The proxy server inspects all HTTP requests and blocked requests based on:
 
