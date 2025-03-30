@@ -14,7 +14,11 @@ import (
 )
 
 func main() {
-	config := config.NewConfig()
+	config, err := config.NewConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	prometheus.MustRegister(
 		metrics.RequestCounter,
 		metrics.RequestBlockedCounter,

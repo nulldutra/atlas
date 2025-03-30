@@ -9,17 +9,17 @@ type Config struct {
 	Backend        []string `mapstructure:"backend"`
 }
 
-func NewConfig() *Config {
+func NewConfig() (*Config, error) {
 	viper.SetConfigFile("config.yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return &config
+	return &config, nil
 }
