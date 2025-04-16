@@ -6,6 +6,7 @@ import (
 	"atlas/metrics"
 	"io"
 	"net/http"
+	_ "net/http/pprof"
 	"net/url"
 	"time"
 )
