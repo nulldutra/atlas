@@ -5,6 +5,7 @@ import (
 	"atlas/inspect"
 	"atlas/metrics"
 	"io"
+	"maps"
 	"net/http"
 	_ "net/http/pprof"
 	"net/url"
@@ -57,10 +58,14 @@ func (p *Proxy) Server(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer resp.Body.Close()
+	maps.Copy(resp.Header, w.Header())
 
+	/*
 	for k, v := range resp.Header {
-		w.Header()[k] = v
+		//w.Header()[k] = v
+		maps.Copy(w.Header, resp.Header)
 	}
+	*/
 
 	w.WriteHeader(resp.StatusCode)
 
